@@ -155,11 +155,11 @@
                 body: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                mode: 'no-cors'  // إضافة no-cors هنا لحل مشاكل CORS
+                }
             })
-            .then(response => {
-                if (response.ok) {
+            .then(response => response.json())
+            .then(responseData => {
+                if (responseData.success) {
                     console.log('تم الحجز بنجاح!');
                     alert('تم الحجز بنجاح!');
                     // إضافة الكراسي المحجوزة للمجموعة بعد الحجز
