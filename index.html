@@ -32,11 +32,11 @@
             line-height: 50px;
         }
         .seat.selected {
-            background-color: green; /* اللون للكراسي المختارة */
+            background-color: green;
         }
         .seat.booked {
-            background-color: red; /* اللون الأحمر للكراسي المحجوزة */
-            cursor: not-allowed; /* غلق التفاعل مع الكراسي المحجوزة */
+            background-color: red;
+            cursor: not-allowed;
         }
         .form-section {
             margin-top: 20px;
@@ -55,7 +55,7 @@
     <script>
         const seatingChart = document.getElementById('seating-chart');
         const selectedSeats = new Set();
-        
+
         const rows = [
             { id: "A", seats: 11 },
             { id: "B", seats: 11 },
@@ -87,12 +87,13 @@
                 seat.innerText = seatId;
                 seat.id = seatId;
                 seat.addEventListener('click', () => {
-                    // إذا كانت الكرسي محجوزة، لا يمكن اختياره
+                    // منع حجز الكرسي إذا كان محجوزًا
                     if (seat.classList.contains('booked')) {
-                        alert('هذه الكرسي محجوز بالفعل');
+                        alert('هذا الكرسي محجوز بالفعل');
                         return;
                     }
 
+                    // اختيار الكرسي
                     if (seat.classList.toggle('selected')) {
                         selectedSeats.add(seatId);
                     } else {
@@ -127,23 +128,23 @@
                 mode: 'no-cors'  // إضافة no-cors هنا لحل مشاكل CORS
             })
             .then(response => {
-                // التأكد من الحجز الناجح
-                alert('تم الحجز بنجاح!');
-                selectedSeats.clear();
-                document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
+                if (response.ok) {
+                    alert('تم الحجز بنجاح!');
+                    console.log('Script executed successfully!');
+                } else {
+                    console.error('Script execution failed.');
+                }
             })
             .catch(error => console.error('Error:', error));
         });
-        
+
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
         fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec')
             .then(response => response.json())
             .then(seatsData => {
-                // استخدام بيانات الحجز لتحديث الكراسي
                 document.querySelectorAll('.seat').forEach(seat => {
                     if (seatsData.some(data => data.seats.includes(seat.id))) {
-                        seat.classList.add('booked'); // إضافة الكراسي المحجوزة
-                        seat.classList.remove('selected'); // التأكد من إزالة الكرسي من الاختيارات بعد الحجز
+                        seat.classList.add('booked');  // إضافة لون الأحمر للكراسي المحجوزة
                     } else {
                         seat.classList.remove('booked');
                     }
