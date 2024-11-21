@@ -105,20 +105,19 @@
             seatingChart.appendChild(rowContainer);
         });
 
+        // رابط Google Apps Script (استبدل YOUR-SCRIPT-ID برمز السكربت الخاص بك)
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec';
+
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
-        fetch('https://script.google.com/macros/s/YOUR-SCRIPT-ID/exec')
+        fetch(scriptUrl)
             .then(response => response.json())
             .then(seatsData => {
-                if (Array.isArray(seatsData)) {
-                    seatsData.forEach(data => {
-                        if (data.seats) {
-                            data.seats.forEach(seatId => {
-                                const seat = document.getElementById(seatId);
-                                if (seat) {
-                                    seat.classList.add('booked');
-                                    bookedSeats.add(seatId);
-                                }
-                            });
+                if (Array.isArray(seatsData.seats)) {
+                    seatsData.seats.forEach(seatId => {
+                        const seat = document.getElementById(seatId);
+                        if (seat) {
+                            seat.classList.add('booked');
+                            bookedSeats.add(seatId);
                         }
                     });
                 } else {
@@ -127,9 +126,9 @@
             })
             .catch(error => console.error('Error fetching data:', error));
 
-        // إرسال الحجز باستخدام no-cors
+        // إرسال الحجز إلى Google Sheets
         document.getElementById('book-now').addEventListener('click', () => {
-            const name = document.getElementById('name').value;
+            const name = document.getElementById('name').value.trim();
             if (!name || selectedSeats.size === 0) {
                 alert('يرجى إدخال الاسم واختيار الكراسي!');
                 return;
@@ -141,28 +140,32 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            fetch('https://script.google.com/macros/s/YOUR-SCRIPT-ID/exec', {
+            fetch(scriptUrl, {
                 method: 'POST',
                 body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' },
-                mode: 'no-cors' // الوضع المضاف
+                headers: { 'Content-Type': 'application/json' }
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            .then(response => response.json())
+            .then(responseData => {
+                if (responseData.success) {
+                    alert('تم الحجز بنجاح!');
+                    selectedSeats.forEach(seatId => {
+                        bookedSeats.add(seatId);
+                        const seat = document.getElementById(seatId);
+                        if (seat) {
+                            seat.classList.add('booked');
+                            seat.classList.remove('selected');
+                        }
+                    });
+                    selectedSeats.clear();
+                } else {
+                    alert('حدث خطأ أثناء الحجز: ' + responseData.message);
                 }
-                alert('تم الحجز بنجاح!');
-                selectedSeats.forEach(seatId => {
-                    bookedSeats.add(seatId);
-                    const seat = document.getElementById(seatId);
-                    if (seat) {
-                        seat.classList.add('booked');
-                        seat.classList.remove('selected');
-                    }
-                });
-                selectedSeats.clear();
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إرسال البيانات.');
+            });
         });
     </script>
 </body>
