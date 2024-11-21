@@ -87,15 +87,21 @@
                 seat.className = 'seat';
                 seat.innerText = seatId;
                 seat.id = seatId;
+
+                // إضافة الحدث عند الضغط على الكرسي
                 seat.addEventListener('click', () => {
-                    if (!bookedSeats.has(seatId)) {  // التأكد من أن الكرسي ليس محجوزًا
-                        if (seat.classList.toggle('selected')) {
-                            selectedSeats.add(seatId);
-                        } else {
-                            selectedSeats.delete(seatId);
-                        }
+                    if (bookedSeats.has(seatId)) {  // إذا كان الكرسي محجوزًا بالفعل
+                        alert('هذا الكرسي محجوز بالفعل.');
+                        return;
+                    }
+
+                    if (seat.classList.toggle('selected')) {
+                        selectedSeats.add(seatId);
+                    } else {
+                        selectedSeats.delete(seatId);
                     }
                 });
+
                 rowContainer.appendChild(seat);
             }
 
@@ -156,6 +162,16 @@
                 if (response.ok) {
                     console.log('تم الحجز بنجاح!');
                     alert('تم الحجز بنجاح!');
+                    // إضافة الكراسي المحجوزة للمجموعة بعد الحجز
+                    selectedSeats.forEach(seatId => {
+                        bookedSeats.add(seatId);  // جعل الكرسي محجوز
+                        const seat = document.getElementById(seatId);
+                        if (seat) {
+                            seat.classList.add('booked');  // تلوين الكرسي باللون الأحمر
+                            seat.classList.remove('selected');  // إزالة اللون الأخضر بعد الحجز
+                        }
+                    });
+                    selectedSeats.clear();  // مسح الكراسي المحددة بعد الحجز
                 } else {
                     console.error('فشل تنفيذ السكربت.');
                     alert('حدث خطأ أثناء الحجز.');
