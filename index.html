@@ -1,26 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حجز الكراسي</title>
+    <title>نظام حجز الكراسي</title>
     <style>
+        /* تنسيق الكراسي */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 20px;
         }
-        .seating-chart {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+
         .row {
             display: grid;
-            grid-gap: 10px;
-            justify-content: center;
+            grid-template-columns: repeat(10, 50px); /* 10 كراسي في كل صف */
+            gap: 10px;
+            margin-bottom: 20px;
         }
+
         .seat {
             width: 50px;
             height: 50px;
@@ -31,69 +29,69 @@
             text-align: center;
             line-height: 50px;
         }
+
         .seat.selected {
             background-color: green;
         }
+
         .seat.booked {
             background-color: red;
             cursor: not-allowed;
         }
-        .form-section {
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
+
     <h1>نظام حجز الكراسي</h1>
-    <div class="seating-chart" id="seating-chart"></div>
-    <div class="form-section">
-        <h3>تسجيل البيانات</h3>
-        <input type="text" id="name" placeholder="الاسم" required>
-        <button id="book-now">احجز الآن</button>
+
+    <div class="row" id="rowA"></div>
+    <div class="row" id="rowB"></div>
+    <div class="row" id="rowC"></div>
+    <div class="row" id="rowD"></div>
+    <div class="row" id="rowE"></div>
+    <div class="row" id="rowF"></div>
+    <div class="row" id="rowG"></div>
+    <div class="row" id="rowH"></div>
+    <div class="row" id="rowI"></div>
+    <div class="row" id="rowJ"></div>
+    <div class="row" id="rowK"></div>
+    <div class="row" id="rowL"></div>
+    <div class="row" id="rowM"></div>
+    <div class="row" id="rowN"></div>
+
+    <div>
+        <h3>اسمك</h3>
+        <input type="text" id="name" placeholder="أدخل اسمك">
+        <button id="book-now">احجز الكراسي</button>
     </div>
 
     <script>
-        const seatingChart = document.getElementById('seating-chart');
-        const selectedSeats = new Set();
+        const seatingChart = {
+            A: 11, B: 11, C: 20, D: 20, E: 13, F: 21, G: 21, H: 14, I: 25, J: 25, K: 16, L: 25, M: 25, N: 15
+        };
 
-        const rows = [
-            { id: "A", seats: 11 },
-            { id: "B", seats: 11 },
-            { id: "C", seats: 20 },
-            { id: "D", seats: 20 },
-            { id: "E", seats: 13 },
-            { id: "F", seats: 21 },
-            { id: "G", seats: 21 },
-            { id: "H", seats: 14 },
-            { id: "I", seats: 25 },
-            { id: "J", seats: 25 },
-            { id: "K", seats: 16 },
-            { id: "L", seats: 25 },
-            { id: "M", seats: 25 },
-            { id: "N", seats: 15 }
-        ];
+        const selectedSeats = new Set(); // لتخزين الكراسي المختارة
+        const bookedSeats = new Set(); // لتخزين الكراسي المحجوزة
 
         // إنشاء الكراسي
-        rows.forEach(row => {
-            const numSeats = row.seats;
-            const rowContainer = document.createElement('div');
-            rowContainer.className = 'row';
-            rowContainer.style.gridTemplateColumns = `repeat(${numSeats}, 50px)`;
-
+        Object.keys(seatingChart).forEach(row => {
+            const numSeats = seatingChart[row];
+            const rowContainer = document.getElementById(`row${row}`);
             for (let i = 1; i <= numSeats; i++) {
-                const seatId = `${row.id}${i}`;
+                const seatId = `${row}${i}`;
                 const seat = document.createElement('div');
                 seat.className = 'seat';
                 seat.innerText = seatId;
                 seat.id = seatId;
                 seat.addEventListener('click', () => {
-                    // منع حجز الكرسي إذا كان محجوزًا
                     if (seat.classList.contains('booked')) {
-                        alert('هذا الكرسي محجوز بالفعل');
+                        alert('هذا الكرسي محجوز بالفعل!');
                         return;
                     }
-
-                    // اختيار الكرسي
+                    if (selectedSeats.has(seatId)) {
+                        alert('لقد قمت باختيار هذا الكرسي من قبل!');
+                        return;
+                    }
                     if (seat.classList.toggle('selected')) {
                         selectedSeats.add(seatId);
                     } else {
@@ -102,8 +100,6 @@
                 });
                 rowContainer.appendChild(seat);
             }
-
-            seatingChart.appendChild(rowContainer);
         });
 
         // إرسال البيانات إلى Google Sheets عبر Google Apps Script
@@ -130,27 +126,31 @@
             .then(response => {
                 if (response.ok) {
                     alert('تم الحجز بنجاح!');
-                    console.log('Script executed successfully!');
+                    selectedSeats.forEach(seatId => {
+                        document.getElementById(seatId).classList.add('booked');
+                    });
                 } else {
-                    console.error('Script execution failed.');
+                    console.error('فشل تنفيذ السكربت.');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('خطأ:', error));
         });
 
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
         fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec')
             .then(response => response.json())
             .then(seatsData => {
-                document.querySelectorAll('.seat').forEach(seat => {
-                    if (seatsData.some(data => data.seats.includes(seat.id))) {
-                        seat.classList.add('booked');  // إضافة لون الأحمر للكراسي المحجوزة
-                    } else {
-                        seat.classList.remove('booked');
-                    }
+                seatsData.forEach(data => {
+                    data.seats.forEach(seatId => {
+                        const seat = document.getElementById(seatId);
+                        if (seat) {
+                            seat.classList.add('booked');
+                            seat.classList.remove('selected');
+                        }
+                    });
                 });
             })
-            .catch(error => console.error('Error fetching data:', error));
+            .catch(error => console.error('خطأ في جلب البيانات:', error));
     </script>
 </body>
 </html>
