@@ -108,7 +108,7 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            fetch('https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec', {
+            fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec', {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
@@ -126,7 +126,7 @@
         });
         
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
-        fetch('https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec', {
+        fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec', {
             method: 'GET',  // استخدم GET لقراءة البيانات
             headers: {
                 'Content-Type': 'application/json'
