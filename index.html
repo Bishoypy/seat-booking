@@ -108,11 +108,8 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            fetch('https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec', {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json'
+            fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec', {
+                 body: JSON.stringify({key: 'value'}) // Data to
                 }
             })
             .then(response => response.json())
