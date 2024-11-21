@@ -32,7 +32,10 @@
             line-height: 50px;
         }
         .seat.selected {
-            background-color: green;
+            background-color: green; /* لون الكرسي المختار */
+        }
+        .seat.booked {
+            background-color: darkgoldenrod; /* اللون الأصفر الغامق للكراسي المحجوزة */
         }
         .form-section {
             margin-top: 20px;
@@ -83,6 +86,11 @@
                 seat.innerText = seatId;
                 seat.id = seatId;
                 seat.addEventListener('click', () => {
+                    if (seat.classList.contains('booked')) {
+                        alert('هذه الكرسي محجوز بالفعل');
+                        return;
+                    }
+
                     if (seat.classList.toggle('selected')) {
                         selectedSeats.add(seatId);
                     } else {
@@ -118,11 +126,9 @@
             })
             .then(response => {
                 // على الرغم من استخدام no-cors، ستكون الاستجابة غير مفيدة، لذلك نكتفي بالتأكد من نجاح الطلب
-                if (response.ok) {
-                    console.log('Script executed successfully!');
-                } else {
-                    console.error('Script execution failed.');
-                }
+                alert('تم الحجز بنجاح!');
+                selectedSeats.clear();
+                document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
             })
             .catch(error => console.error('Error:', error));
         });
@@ -133,9 +139,9 @@
             .then(seatsData => {
                 document.querySelectorAll('.seat').forEach(seat => {
                     if (seatsData.some(data => data.seats.includes(seat.id))) {
-                        seat.classList.add('selected');
+                        seat.classList.add('booked'); // إضافة الكراسي المحجوزة
                     } else {
-                        seat.classList.remove('selected');
+                        seat.classList.remove('booked');
                     }
                 });
             })
