@@ -32,11 +32,11 @@
             line-height: 50px;
         }
         .seat.selected {
-            background-color: green; /* لون الكرسي المختار */
+            background-color: green; /* اللون للكراسي المختارة */
         }
         .seat.booked {
             background-color: red; /* اللون الأحمر للكراسي المحجوزة */
-            cursor: not-allowed; /* غلق التفاعل مع الكرسي المحجوز */
+            cursor: not-allowed; /* غلق التفاعل مع الكراسي المحجوزة */
         }
         .form-section {
             margin-top: 20px;
@@ -87,6 +87,7 @@
                 seat.innerText = seatId;
                 seat.id = seatId;
                 seat.addEventListener('click', () => {
+                    // إذا كانت الكرسي محجوزة، لا يمكن اختياره
                     if (seat.classList.contains('booked')) {
                         alert('هذه الكرسي محجوز بالفعل');
                         return;
@@ -126,7 +127,7 @@
                 mode: 'no-cors'  // إضافة no-cors هنا لحل مشاكل CORS
             })
             .then(response => {
-                // على الرغم من استخدام no-cors، ستكون الاستجابة غير مفيدة، لذلك نكتفي بالتأكد من نجاح الطلب
+                // التأكد من الحجز الناجح
                 alert('تم الحجز بنجاح!');
                 selectedSeats.clear();
                 document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
@@ -137,17 +138,4 @@
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
         fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec')
             .then(response => response.json())
-            .then(seatsData => {
-                document.querySelectorAll('.seat').forEach(seat => {
-                    if (seatsData.some(data => data.seats.includes(seat.id))) {
-                        seat.classList.add('booked'); // إضافة الكراسي المحجوزة
-                        seat.classList.remove('selected'); // التأكد من إزالة الكرسي من الاختيارات بعد الحجز
-                    } else {
-                        seat.classList.remove('booked');
-                    }
-                });
-            })
-            .catch(error => console.error('Error fetching data:', error));
-    </script>
-</body>
-</html>
+          
