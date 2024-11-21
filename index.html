@@ -35,7 +35,8 @@
             background-color: green; /* لون الكرسي المختار */
         }
         .seat.booked {
-            background-color: darkgoldenrod; /* اللون الأصفر الغامق للكراسي المحجوزة */
+            background-color: red; /* اللون الأحمر للكراسي المحجوزة */
+            cursor: not-allowed; /* غلق التفاعل مع الكرسي المحجوز */
         }
         .form-section {
             margin-top: 20px;
@@ -140,6 +141,7 @@
                 document.querySelectorAll('.seat').forEach(seat => {
                     if (seatsData.some(data => data.seats.includes(seat.id))) {
                         seat.classList.add('booked'); // إضافة الكراسي المحجوزة
+                        seat.classList.remove('selected'); // التأكد من إزالة الكرسي من الاختيارات بعد الحجز
                     } else {
                         seat.classList.remove('booked');
                     }
