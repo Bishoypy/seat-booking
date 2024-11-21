@@ -177,7 +177,10 @@
                     alert('حدث خطأ أثناء الحجز.');
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء الحجز.');
+            });
         });
     </script>
 </body>
