@@ -129,7 +129,7 @@
             .then(response => response.json())
             .then(seatsData => {
                 document.querySelectorAll('.seat').forEach(seat => {
-                    if (seatsData.some(data => data.seat === seat.id && data.status === 'Booked')) {
+                    if (seatsData.some(data => data.seats.includes(seat.id))) {
                         seat.classList.add('selected');
                     } else {
                         seat.classList.remove('selected');
