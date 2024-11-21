@@ -114,36 +114,32 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                mode: 'cors'  // هذه الإعدادات مهمة لضمان التفاعل بين المصدرين
+                mode: 'no-cors'  // إضافة no-cors هنا لحل مشاكل CORS
             })
-            .then(response => response.json())
-            .then(result => {
-                alert(result.message);
-                selectedSeats.clear();
-                document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
+            .then(response => {
+                // على الرغم من استخدام no-cors، ستكون الاستجابة غير مفيدة، لذلك نكتفي بالتأكد من نجاح الطلب
+                if (response.ok) {
+                    console.log('Script executed successfully!');
+                } else {
+                    console.error('Script execution failed.');
+                }
             })
             .catch(error => console.error('Error:', error));
         });
         
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
-        fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec', {
-            method: 'GET',  // استخدم GET لقراءة البيانات
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            mode: 'cors'  // تأكد من تفعيل CORS
-        })
-        .then(response => response.json())
-        .then(seatsData => {
-            document.querySelectorAll('.seat').forEach(seat => {
-                if (seatsData.some(data => data.seats.includes(seat.id))) {
-                    seat.classList.add('selected');
-                } else {
-                    seat.classList.remove('selected');
-                }
-            });
-        })
-        .catch(error => console.error('Error fetching data:', error));
+        fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec')
+            .then(response => response.json())
+            .then(seatsData => {
+                document.querySelectorAll('.seat').forEach(seat => {
+                    if (seatsData.some(data => data.seats.includes(seat.id))) {
+                        seat.classList.add('selected');
+                    } else {
+                        seat.classList.remove('selected');
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
     </script>
 </body>
 </html>
