@@ -19,7 +19,7 @@
         .row {
             display: grid;
             grid-gap: 10px;
-            justify-content: center; /* لتوسيط الكراسي */
+            justify-content: center;
         }
         .seat {
             width: 50px;
@@ -41,9 +41,7 @@
 </head>
 <body>
     <h1>نظام حجز الكراسي</h1>
-    <div class="seating-chart" id="seating-chart">
-        <!-- الكراسي سيتم إنشاؤها ديناميكياً -->
-    </div>
+    <div class="seating-chart" id="seating-chart"></div>
     <div class="form-section">
         <h3>تسجيل البيانات</h3>
         <input type="text" id="name" placeholder="الاسم" required>
@@ -53,8 +51,7 @@
     <script>
         const seatingChart = document.getElementById('seating-chart');
         const selectedSeats = new Set();
-
-        // تحديد عدد المقاعد لكل صف بناءً على التوضيح
+        
         const rows = [
             { id: "A", seats: 11 },
             { id: "B", seats: 11 },
@@ -68,16 +65,16 @@
             { id: "J", seats: 25 },
             { id: "K", seats: 16 },
             { id: "L", seats: 25 },
-            { id: "M", seats: 25 }, // صف M مع 25 كرسي
-            { id: "N", seats: 15 }  // صف N مع 15 كرسي
+            { id: "M", seats: 25 },
+            { id: "N", seats: 15 }
         ];
 
-        // إنشاء شبكة الكراسي
+        // إنشاء الكراسي
         rows.forEach(row => {
             const numSeats = row.seats;
             const rowContainer = document.createElement('div');
             rowContainer.className = 'row';
-            rowContainer.style.gridTemplateColumns = `repeat(${numSeats}, 50px)`; // تحديد أعمدة الشبكة
+            rowContainer.style.gridTemplateColumns = `repeat(${numSeats}, 50px)`;
 
             for (let i = 1; i <= numSeats; i++) {
                 const seatId = `${row.id}${i}`;
@@ -86,7 +83,6 @@
                 seat.innerText = seatId;
                 seat.id = seatId;
                 seat.addEventListener('click', () => {
-                    // التبديل بين اختيار الكرسي
                     if (seat.classList.toggle('selected')) {
                         selectedSeats.add(seatId);
                     } else {
@@ -99,7 +95,7 @@
             seatingChart.appendChild(rowContainer);
         });
 
-        // زر الحجز
+        // إرسال البيانات إلى Google Sheets عبر Google Apps Script
         document.getElementById('book-now').addEventListener('click', () => {
             const name = document.getElementById('name').value;
             if (!name || selectedSeats.size === 0) {
@@ -111,22 +107,36 @@
                 seats: Array.from(selectedSeats),
                 timestamp: new Date().toLocaleString()
             };
-            // إرسال البيانات إلى Google Sheets
-            fetch('https://script.google.com/macros/s/AKfycbw8JmaqOX-eZ-D32iC3Q7dpdGolebaR2mo4NUXWq83ZzuPTlNCP7rM8Ybjv2TMwthR-IQ/exec', { // ضع رابط Google Apps Script هنا
+
+            fetch('https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec', {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             })
-                .then(response => response.json())
-                .then(result => {
-                    alert(result.message);
-                    selectedSeats.clear();
-                    document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
-                })
-                .catch(error => console.error('Error:', error));
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                selectedSeats.clear();
+                document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
+            })
+            .catch(error => console.error('Error:', error));
         });
+        
+        // قراءة بيانات الكراسي المحجوزة من Google Sheets
+        fetch('https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec')
+            .then(response => response.json())
+            .then(seatsData => {
+                document.querySelectorAll('.seat').forEach(seat => {
+                    if (seatsData.some(data => data.seat === seat.id && data.status === 'Booked')) {
+                        seat.classList.add('selected');
+                    } else {
+                        seat.classList.remove('selected');
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
     </script>
 </body>
 </html>
