@@ -106,7 +106,16 @@
         });
 
         // رابط Google Apps Script (استبدل YOUR-SCRIPT-ID برمز السكربت الخاص بك)
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbzzIF6kry5B3p3us3vaNRZP9bvShpTNBGN-TFxBZBTvG9uYWuhpBhau09YMZ5FbiYzErg/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwRJluhAtu5vW7KVRxPcI3lKpDQwkcuB7pXtS3pglbcsLPJIDJmOfWDpotHz4uKMJ3ZdQ/exec';
+
+        // استدعاء fetch في وضع no-cors
+        fetch(scriptUrl, { mode: 'no-cors' })
+            .then(() => {
+                console.log("Request complete (no-cors mode)");
+            })
+            .catch(error => {
+                console.error('Error in no-cors mode:', error);
+            });
 
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
         fetch(scriptUrl)
