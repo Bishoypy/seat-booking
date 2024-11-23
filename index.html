@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام حجز الكراسي</title>
+    <title>حجز الكراسي</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,10 +34,6 @@
         .seat.selected {
             background-color: green;
         }
-        .seat.booked {
-            background-color: red;
-            cursor: not-allowed;
-        }
         .form-section {
             margin-top: 20px;
         }
@@ -50,14 +46,12 @@
         <h3>تسجيل البيانات</h3>
         <input type="text" id="name" placeholder="الاسم" required>
         <button id="book-now">احجز الآن</button>
-        <button id="fetch-seat">جلب بيانات كرسي</button>
     </div>
 
     <script>
         const seatingChart = document.getElementById('seating-chart');
         const selectedSeats = new Set();
-        const bookedSeats = new Set();
-
+        
         const rows = [
             { id: "A", seats: 11 },
             { id: "B", seats: 11 },
@@ -77,125 +71,72 @@
 
         // إنشاء الكراسي
         rows.forEach(row => {
+            const numSeats = row.seats;
             const rowContainer = document.createElement('div');
             rowContainer.className = 'row';
-            rowContainer.style.gridTemplateColumns = `repeat(${row.seats}, 50px)`;
+            rowContainer.style.gridTemplateColumns = `repeat(${numSeats}, 50px)`;
 
-            for (let i = 1; i <= row.seats; i++) {
+            for (let i = 1; i <= numSeats; i++) {
                 const seatId = `${row.id}${i}`;
                 const seat = document.createElement('div');
                 seat.className = 'seat';
                 seat.innerText = seatId;
                 seat.id = seatId;
-
                 seat.addEventListener('click', () => {
-                    if (bookedSeats.has(seatId)) {
-                        alert('هذا الكرسي محجوز بالفعل.');
-                        return;
-                    }
-                    seat.classList.toggle('selected');
-                    if (selectedSeats.has(seatId)) {
-                        selectedSeats.delete(seatId);
-                    } else {
+                    if (seat.classList.toggle('selected')) {
                         selectedSeats.add(seatId);
+                    } else {
+                        selectedSeats.delete(seatId);
                     }
                 });
-
                 rowContainer.appendChild(seat);
             }
+
             seatingChart.appendChild(rowContainer);
         });
 
-        // رابط Google Apps Script (استبدل YOUR_SCRIPT_ID برمز السكربت الخاص بك)
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwRJluhAtu5vW7KVRxPcI3lKpDQwkcuB7pXtS3pglbcsLPJIDJmOfWDpotHz4uKMJ3ZdQ/exec';
-
-        // قراءة بيانات الكراسي المحجوزة من Google Sheets
-        fetch(scriptUrl)
-            .then(response => response.json())
-            .then(seatsData => {
-                if (Array.isArray(seatsData.seats)) {
-                    seatsData.seats.forEach(seatId => {
-                        const seat = document.getElementById(seatId);
-                        if (seat) {
-                            seat.classList.add('booked');
-                            bookedSeats.add(seatId);
-                        }
-                    });
-                } else {
-                    console.error('Invalid data format:', seatsData);
-                }
-            })
-            .catch(error => console.error('Error fetching data:', error));
-
-        // إرسال الحجز إلى Google Sheets
+        // إرسال البيانات إلى Google Sheets عبر Google Apps Script
         document.getElementById('book-now').addEventListener('click', () => {
-            const name = document.getElementById('name').value.trim();
+            const name = document.getElementById('name').value;
             if (!name || selectedSeats.size === 0) {
                 alert('يرجى إدخال الاسم واختيار الكراسي!');
                 return;
             }
-
             const data = {
                 name,
                 seats: Array.from(selectedSeats),
                 timestamp: new Date().toLocaleString()
             };
 
-            fetch(scriptUrl, {
+            fetch('https://script.google.com/macros/s/AKfycbwRJluhAtu5vW7KVRxPcI3lKpDQwkcuB7pXtS3pglbcsLPJIDJmOfWDpotHz4uKMJ3ZdQ/exec', {
                 method: 'POST',
                 body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(response => response.json())
-            .then(responseData => {
-                if (responseData.success) {
-                    alert('تم الحجز بنجاح!');
-                    selectedSeats.forEach(seatId => {
-                        bookedSeats.add(seatId);
-                        const seat = document.getElementById(seatId);
-                        if (seat) {
-                            seat.classList.add('booked');
-                            seat.classList.remove('selected');
-                        }
-                    });
-                    selectedSeats.clear();
-                } else {
-                    alert('حدث خطأ أثناء الحجز: ' + responseData.message);
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('حدث خطأ أثناء إرسال البيانات.');
-            });
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                selectedSeats.clear();
+                document.querySelectorAll('.seat.selected').forEach(seat => seat.classList.remove('selected'));
+            })
+            .catch(error => console.error('Error:', error));
         });
-
-        // جلب بيانات كرسي معين
-        document.getElementById('fetch-seat').addEventListener('click', () => {
-            const seatId = prompt('أدخل معرف الكرسي الذي تريد جلب بياناته:');
-            if (!seatId) {
-                alert('يرجى إدخال معرف الكرسي!');
-                return;
-            }
-
-            fetch(`${scriptUrl}?seatId=${seatId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            console.error('Error fetching data:', errorData.error || response.statusText);
-                            throw new Error(errorData.error || response.statusText);
-                        });
+        
+        // قراءة بيانات الكراسي المحجوزة من Google Sheets
+        fetch('https://script.google.com/macros/s/AKfycbwRJluhAtu5vW7KVRxPcI3lKpDQwkcuB7pXtS3pglbcsLPJIDJmOfWDpotHz4uKMJ3ZdQ/exec')
+            .then(response => response.json())
+            .then(seatsData => {
+                document.querySelectorAll('.seat').forEach(seat => {
+                    if (seatsData.some(data => data.seats.includes(seat.id))) {
+                        seat.classList.add('selected');
+                    } else {
+                        seat.classList.remove('selected');
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Seat data:', data);
-                    alert(`بيانات الكرسي:\nالكرسي: ${data.seatId}\nالحالة: ${data.status}\nالاسم: ${data.name}\nالوقت: ${data.time}`);
-                })
-                .catch(error => {
-                    console.error('Error in fetch:', error);
-                    alert('حدث خطأ أثناء جلب بيانات الكرسي.');
                 });
-        });
+            })
+            .catch(error => console.error('Error fetching data:', error));
     </script>
 </body>
 </html>
