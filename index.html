@@ -50,6 +50,7 @@
         <h3>تسجيل البيانات</h3>
         <input type="text" id="name" placeholder="الاسم" required>
         <button id="book-now">احجز الآن</button>
+        <button id="fetch-seat">جلب بيانات كرسي</button>
     </div>
 
     <script>
@@ -105,17 +106,8 @@
             seatingChart.appendChild(rowContainer);
         });
 
-        // رابط Google Apps Script (استبدل YOUR-SCRIPT-ID برمز السكربت الخاص بك)
+        // رابط Google Apps Script (استبدل YOUR_SCRIPT_ID برمز السكربت الخاص بك)
         const scriptUrl = 'https://script.google.com/macros/s/AKfycbwRJluhAtu5vW7KVRxPcI3lKpDQwkcuB7pXtS3pglbcsLPJIDJmOfWDpotHz4uKMJ3ZdQ/exec';
-
-        // استدعاء fetch في وضع no-cors
-        fetch(scriptUrl, { mode: 'no-cors' })
-            .then(() => {
-                console.log("Request complete (no-cors mode)");
-            })
-            .catch(error => {
-                console.error('Error in no-cors mode:', error);
-            });
 
         // قراءة بيانات الكراسي المحجوزة من Google Sheets
         fetch(scriptUrl)
@@ -175,6 +167,34 @@
                 console.error('Error:', error);
                 alert('حدث خطأ أثناء إرسال البيانات.');
             });
+        });
+
+        // جلب بيانات كرسي معين
+        document.getElementById('fetch-seat').addEventListener('click', () => {
+            const seatId = prompt('أدخل معرف الكرسي الذي تريد جلب بياناته:');
+            if (!seatId) {
+                alert('يرجى إدخال معرف الكرسي!');
+                return;
+            }
+
+            fetch(`${scriptUrl}?seatId=${seatId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            console.error('Error fetching data:', errorData.error || response.statusText);
+                            throw new Error(errorData.error || response.statusText);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Seat data:', data);
+                    alert(`بيانات الكرسي:\nالكرسي: ${data.seatId}\nالحالة: ${data.status}\nالاسم: ${data.name}\nالوقت: ${data.time}`);
+                })
+                .catch(error => {
+                    console.error('Error in fetch:', error);
+                    alert('حدث خطأ أثناء جلب بيانات الكرسي.');
+                });
         });
     </script>
 </body>
